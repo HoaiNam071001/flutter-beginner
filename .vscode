@@ -1,0 +1,9 @@
+{
+  "dart.flutterSdkPath": ".fvm/flutter_sdk",
+  "search.exclude": {
+    "**/.fvm": true
+  },
+  "watcher.exclude": {
+    "**/.fvm": true
+  }
+}
