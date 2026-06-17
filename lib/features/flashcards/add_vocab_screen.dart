@@ -47,6 +47,9 @@ class _AddVocabScreenState extends State<AddVocabScreen> {
     final enController = TextEditingController();
     final viController = TextEditingController();
 
+    // Tạo FocusNode cho ô Tiếng Việt
+    final viFocusNode = FocusNode();
+
     showDialog(
       context: context,
       builder: (context) {
@@ -58,37 +61,38 @@ class _AddVocabScreenState extends State<AddVocabScreen> {
               TextField(
                 controller: enController,
                 decoration: const InputDecoration(labelText: 'Tiếng Anh', hintText: 'VD: Hello'),
-                autofocus: true, // Tự động bật bàn phím
+                autofocus: true, // Tự động bật bàn phím tại ô này
+                textInputAction: TextInputAction.next, // Đổi nút dưới bàn phím thành "Next" (Tiếp tục)
+                onSubmitted: (_) {
+                  // Khi bấm nút Next trên bàn phím, nhảy sang ô Tiếng Việt
+                  FocusScope.of(context).requestFocus(viFocusNode);
+                },
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: viController,
+                focusNode: viFocusNode, // Gán focusNode vào đây
                 decoration: const InputDecoration(labelText: 'Tiếng Việt', hintText: 'VD: Xin chào'),
+                textInputAction: TextInputAction.done, // Đổi nút dưới bàn phím thành "Done" (Hoàn thành)
+                onSubmitted: (_) {
+                  // (Tùy chọn) Bấm Done trên bàn phím thì tự động kích hoạt lưu luôn giống như bấm nút "Lưu"
+                  _handleSave(enController, viController);
+                },
               ),
             ],
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context), // Tắt dialog
+              onPressed: () {
+                viFocusNode.dispose(); // Giải phóng focus node khi hủy
+                Navigator.pop(context);
+              },
               child: const Text('Hủy', style: TextStyle(color: Colors.grey)),
             ),
             ElevatedButton(
               onPressed: () {
-                // Kiểm tra rỗng
-                if (enController.text.trim().isEmpty || viController.text.trim().isEmpty) {
-                  return;
-                }
-
-                // Cập nhật State và Lưu Local
-                setState(() {
-                  _vocabList.insert(0, { // Thêm lên đầu danh sách
-                    'en': enController.text.trim(),
-                    'vi': viController.text.trim(),
-                  });
-                });
-                _saveVocabToLocal();
-
-                Navigator.pop(context); // Tắt dialog sau khi lưu xong
+                viFocusNode.dispose(); // Giải phóng focus node khi lưu
+                _handleSave(enController, viController);
               },
               child: const Text('Lưu'),
             ),
@@ -96,6 +100,22 @@ class _AddVocabScreenState extends State<AddVocabScreen> {
         );
       },
     );
+  }
+
+  // Tách hàm xử lý lưu riêng cho gọn sạch code
+  void _handleSave(TextEditingController enController, TextEditingController viController) {
+    if (enController.text.trim().isEmpty || viController.text.trim().isEmpty) {
+      return;
+    }
+
+    setState(() {
+      _vocabList.insert(0, {
+        'en': enController.text.trim(),
+        'vi': viController.text.trim(),
+      });
+    });
+    _saveVocabToLocal();
+    Navigator.pop(context); // Tắt dialog
   }
 
   @override
