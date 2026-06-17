@@ -64,7 +64,7 @@ class _VocabCardState extends State<VocabCard> {
           child: Text(
             _isFlipped ? widget.vietnameseMeaning : widget.englishWord,
             style: TextStyle(
-              fontSize: 22,
+              fontSize: 22, 
               fontWeight: FontWeight.bold,
               color: _isFlipped ? Colors.teal.shade900 : Colors.black87,
             ),
